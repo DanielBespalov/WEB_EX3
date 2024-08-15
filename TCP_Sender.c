@@ -9,6 +9,11 @@
 #define BUFFER_SIZE 1024
 #define EXIT_MESSAGE "EXIT"
 
+// Randomly drop packets based on the given loss probability
+int should_drop_packet(double loss_probability) {
+    return (rand() / (double)RAND_MAX) < loss_probability;
+}
+
 void error_handling(const char *message) {
     perror(message);
     exit(1);
@@ -20,11 +25,18 @@ void set_congestion_control(int sockfd, const char *algo) {
     }
 }
 
-void send_file(int sockfd, FILE *fp) {
+void send_file(int sockfd, FILE *fp,double loss_probability) {
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
 
+    srand(time(NULL)); // Initialize random seed
+
     while ((bytes_read = fread(buffer, sizeof(char), BUFFER_SIZE, fp)) > 0) {
+        if (should_drop_packet(loss_probability)) {
+            printf("Simulating packet loss...\n");
+            continue; // Skip sending this packet
+        }
+
         if (send(sockfd, buffer, bytes_read, 0) == -1) {
             error_handling("File send failed");
         }
@@ -46,6 +58,9 @@ int main(int argc, char *argv[]) {
 
     char filename[256]; 
 
+    double loss_probability = 0.02;
+
+    
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
         error_handling("Socket creation failed");
@@ -98,4 +113,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
