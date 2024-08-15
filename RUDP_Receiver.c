@@ -98,7 +98,6 @@ int main(int argc, char *argv[]) {
             printf("- Average time = %.2f ms\n", average_time * 1000);
             printf("- Average bandwidth = %.2f MB/s\n", total_bandwidth_mb);
 
-            printf("Sender disconnected. Waiting for new connection...\n");
             run_number++;
     }
         }
