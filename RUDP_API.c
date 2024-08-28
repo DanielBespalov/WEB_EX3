@@ -40,7 +40,10 @@ uint16_t calculate_checksum(void *data, int length) {
     return (uint16_t)(~sum);
 }
 
-void rudp_send_packet(int sockfd, struct sockaddr_in *addr, socklen_t addr_size, char *data, uint16_t flags) {
+#include <stdlib.h>
+#include <time.h>
+
+void rudp_send_packet(int sockfd, struct sockaddr_in *addr, socklen_t addr_size, char *data, uint16_t flags, double loss_percentage) {
     struct rudp_header header;
     char packet[BUFFER_SIZE];
 
@@ -59,16 +62,26 @@ void rudp_send_packet(int sockfd, struct sockaddr_in *addr, socklen_t addr_size,
     header.checksum = calculate_checksum(packet, RUDP_HEADER_SIZE + data_len);
     memcpy(packet, &header, RUDP_HEADER_SIZE);
 
+    // Simulate packet loss
+    if ((rand() % 100) < (int)(loss_percentage * 100)) {
+        return;
+    }
+
     if (sendto(sockfd, packet, RUDP_HEADER_SIZE + data_len, 0, (struct sockaddr *)addr, addr_size) == -1) {
         error_handling("Failed to send packet");
     }
 }
 
-ssize_t rudp_receive_packet(int sockfd, char *buffer, struct sockaddr_in *addr, socklen_t *addr_size) {
+ssize_t rudp_receive_packet(int sockfd, char *buffer, struct sockaddr_in *addr, socklen_t *addr_size, double loss_percentage) {
     char packet[BUFFER_SIZE];
     ssize_t bytes_received = recvfrom(sockfd, packet, BUFFER_SIZE, 0, (struct sockaddr *)addr, addr_size);
 
     if (bytes_received > 0) {
+        // Simulate packet loss
+        if ((rand() % 100) < (int)(loss_percentage * 100)) {
+            return 0;  // Simulate as if the packet was not received
+        }
+
         struct rudp_header *header = (struct rudp_header *)packet;
         uint16_t received_checksum = header->checksum;
         header->checksum = 0;
