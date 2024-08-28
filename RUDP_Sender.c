@@ -8,13 +8,13 @@
 #define BUFFER_SIZE 1024
 #define EXIT_MESSAGE "EXIT"
 
-void send_file(int sockfd, struct sockaddr_in *server_addr, socklen_t server_addr_size, FILE *fp) {
+void send_file(int sockfd, struct sockaddr_in *server_addr, socklen_t server_addr_size, FILE *fp, double loss_probability) {
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
 
     while ((bytes_read = fread(buffer, sizeof(char), BUFFER_SIZE - RUDP_HEADER_SIZE, fp)) > 0) {
         buffer[bytes_read] = '\0';  // Null-terminate the data
-        rudp_send_packet(sockfd, server_addr, server_addr_size, buffer, FLAG_DATA);
+        rudp_send_packet(sockfd, server_addr, server_addr_size, buffer, FLAG_DATA, loss_probability);
     }
 }
 
@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 
     char *ip = argv[2];
     int port = atoi(argv[4]);
+    double loss_probability = 0.10;
 
     int sockfd;
     struct sockaddr_in server_addr;
@@ -58,9 +59,9 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         // Send the file
-        send_file(sockfd, &server_addr, server_addr_size, fp);
+        send_file(sockfd, &server_addr, server_addr_size, fp, loss_probability);
 
-        rudp_send_packet(sockfd, &server_addr, server_addr_size, EXIT_MESSAGE, FLAG_FIN);        
+        rudp_send_packet(sockfd, &server_addr, server_addr_size, EXIT_MESSAGE, FLAG_FIN, loss_probability);        
 
         printf("File sent. Send again? (y/n): ");
         char choice = getchar();

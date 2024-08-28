@@ -20,7 +20,8 @@ struct rudp_header {
 
 void error_handling(char *message);
 uint16_t calculate_checksum(void *data, int length);
-void rudp_send_packet(int sockfd, struct sockaddr_in *addr, socklen_t addr_size, char *data, uint16_t flags);
-ssize_t rudp_receive_packet(int sockfd, char *buffer, struct sockaddr_in *addr, socklen_t *addr_size);
+ssize_t rudp_receive_packet(int sockfd, char *buffer, struct sockaddr_in *addr, socklen_t *addr_size, double loss_percentage);
+void rudp_send_packet(int sockfd, struct sockaddr_in *addr, socklen_t addr_size, char *data, uint16_t flags, double loss_percentage);
+
 
 #endif // RUDP_API_H

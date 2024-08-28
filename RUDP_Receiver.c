@@ -61,8 +61,7 @@ int main(int argc, char *argv[]) {
         double total_bandwidth = 0;  // Accumulates total bytes across all files
         int file_count = 0;
         double total_time = 0.0;
-
-        printf("Waiting for data...\n");
+        double loss_probability = 0.10; 
         
         while (1) {
             struct timespec start, end;
@@ -70,7 +69,7 @@ int main(int argc, char *argv[]) {
 
             size_t file_bytes_received = 0;  // Track bytes received for this file
 
-            while ((bytes_received = rudp_receive_packet(sockfd, buffer, &client_addr, &client_addr_size)) > 0) {
+            while ((bytes_received = rudp_receive_packet(sockfd, buffer, &client_addr, &client_addr_size, loss_probability)) > 0) {
                 if (strncmp(buffer, EXIT_MESSAGE, strlen(EXIT_MESSAGE)) == 0) {
                     break;
                 }
@@ -84,7 +83,6 @@ int main(int argc, char *argv[]) {
                 perror("Receive failed");
                 exit(1);
             } else if (bytes_received == 0) {
-                printf("Connection closed by sender\n");  // Debug print
                 break;
             }
 
@@ -100,7 +98,7 @@ int main(int argc, char *argv[]) {
 
             run_number++;
     }
-        }
+}
 
         
 

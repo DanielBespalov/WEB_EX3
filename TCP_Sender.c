@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
+#include <time.h>
 
 #define BUFFER_SIZE 1024
 #define EXIT_MESSAGE "EXIT"
@@ -58,9 +59,9 @@ int main(int argc, char *argv[]) {
 
     char filename[256]; 
 
-    double loss_probability = 0.02;
+    double loss_probability = 0.10;
 
-    
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
         error_handling("Socket creation failed");
@@ -91,7 +92,7 @@ int main(int argc, char *argv[]) {
     
     while (1) {
         // Send the file
-        send_file(sockfd, fp);
+        send_file(sockfd, fp, loss_probability);
         
 
         printf("File sent. Send again? (y/n): ");
